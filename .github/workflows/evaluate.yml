@@ -21,6 +21,10 @@ jobs:
       - run: mkdir -p assets/data/
       - run: unzip youtube-statistics.zip -d assets/data/
       # - run: cat assets/data/comments.csv | head
+      - name: Install packages
+        run: |
+          R -e 'install.packages("tokenizers")'
+          R -e 'install.packages("dplyr")'
       
-      # Run ingestion
+      # Run ingestion (should be done in a separate job)
       - run: Rscript ahri/ingest.r
