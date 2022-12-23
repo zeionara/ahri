@@ -1,0 +1,13 @@
+name: evaluate
+run-name: ${{ github.actor }} is evaluating a model
+on: [push]
+jobs:
+  pull-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: pip install kaggle
+      - env:
+          KAGGLE_API_USERNAME: secrets.KAGGLE_API_USERNAME
+        run: echo "Installed kaggle, lets connect to it as $KAGGLE_API_USERNAME"
+      # - run: kaggle datasets download -d advaypatil/youtube-statistics
