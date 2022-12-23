@@ -5,8 +5,8 @@ jobs:
   pull-data:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: sudo apt-get install unzip
+      - uses: actions/checkout@v3  # cwd: /home/runner/work/ahri/ahri
+      - run: sudo apt-get install unzip tree
       - run: pip install kaggle
       - run: mkdir $HOME/.kaggle
       - env:
@@ -15,5 +15,6 @@ jobs:
       - run: kaggle datasets download -d advaypatil/youtube-statistics
       - run: mkdir -p assets/data/
       - run: unzip youtube-statistics.zip -d assets/data/
-      - run: echo "Now in directory $PWD"
-      - run: cat assets/data/comments.tsv | head
+      # - run: echo "Now in directory $PWD"
+      - run: tree .
+      # - run: cat assets/data/comments.tsv | head
