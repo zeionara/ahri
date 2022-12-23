@@ -2,19 +2,25 @@ name: evaluate
 run-name: evaluating model for ${{ github.actor }}
 on: [push]
 jobs:
-  pull-data:
+  pull:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3  # cwd: /home/runner/work/ahri/ahri
-      - run: sudo apt-get install unzip tree
+      - uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+      - uses: r-lib/actions/setup-r@master
+
+      # Download dataset
+      - run: sudo apt-get install unzip
       - run: pip install kaggle
       - run: mkdir $HOME/.kaggle
       - env:
           KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
         run: echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
       - run: kaggle datasets download -d advaypatil/youtube-statistics
+
+      # Unpack data
       - run: mkdir -p assets/data/
       - run: unzip youtube-statistics.zip -d assets/data/
-      # - run: echo "Now in directory $PWD"
-      - run: tree .
-      # - run: cat assets/data/comments.tsv | head
+      # - run: cat assets/data/comments.csv | head
+      
+      # Run ingestion
+      - run: Rscript ahri/ingest.r
