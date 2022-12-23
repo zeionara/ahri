@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-r@v2
 
       # Download dataset
       - run: sudo apt-get install unzip
