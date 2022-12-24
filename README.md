@@ -18,7 +18,14 @@ To install necessary software components locally run the following command in ub
 sudo apt-get install libblas-dev liblapack-dev gfortran
 ```
 
-Also see separate scripts for libraries which need to be installed.
+Also see separate scripts for libraries which need to be installed, but additional libraries must be present to be able to run the provided scripts:
+
+```r
+install.packages("furrr")
+install.packages('kernlab')
+install.packages('kknn')  # raises exception on ubuntu, but necessary to apply kknn classifier
+install.packages('MLmetrics')
+```
 
 # Usage
 
