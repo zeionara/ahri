@@ -36,3 +36,8 @@ Currently there are multiple steps of the data processing pipeline:
 ```
 ./ahri/main.r -s 10
 ```
+
+2. Run model training and evaluation
+```
+./ahri/evaluate.r
+```
