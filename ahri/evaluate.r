@@ -95,11 +95,12 @@ print(test_subset)
 
 train_subset$sentiment <- as.factor(train_subset$sentiment)
 levels(train_subset$sentiment) <- c("negative", "neutral", "positive")
-train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE, summaryFunction = multiClassSummary)
+train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE, summaryFunction = multiClassSummary, verboseIter = TRUE)
 metric <- "logLoss"
 formula <- paste("sentiment ~", paste(colnames(train_subset)[3:ncol(train_subset)], collapse = " + "))
 # print(formula)
-classifier <- train(as.formula(formula), data = train_subset, method = "svmLinear2", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE, metric = metric)
+classifier <- train(as.formula(formula), data = head(train_subset, 5000), method = "mlp", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE, metric = metric,
+    tuneGrid = data.frame(size = c(1, 5, 7, 9)))
 
 print(classifier)
 
