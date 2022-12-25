@@ -6,7 +6,7 @@ logo source: https://www.reddit.com/r/leagueoflegends/comments/660rsj/ahri_orb_l
 
 <div style="clear: both;">
     <div style="float: right; margin-left: 1em;">
-        <img src="assets/images/logo.png" alt="">
+        <img src="assets/images/logo.png" alt="" width="100px"/>
     </div>
     <div>
         Exploratory project for applying github actions to implement ml pipelines.
