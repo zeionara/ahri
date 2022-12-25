@@ -4,15 +4,10 @@
 logo source: https://www.reddit.com/r/leagueoflegends/comments/660rsj/ahri_orb_logo/
 !-->
 
-<div style="clear: both;">
-    <div style="float: right; margin-left: 1em;">
-        <img src="assets/images/logo.png" alt="" width="100px"/>
-    </div>
-    <div>
-        Exploratory project for applying github actions to implement ml pipelines.
-        The project uses a [corpus with youtube comments](https://www.kaggle.com/datasets/advaypatil/youtube-statistics) from kaggle.
-    </div>
-</div>
+<img src="assets/images/logo.png" width="400px" align="right"/>
+
+Exploratory project for applying github actions to implement ml pipelines.  
+The project uses a [corpus with youtube comments](https://www.kaggle.com/datasets/advaypatil/youtube-statistics) from kaggle.
 
 # Prerequisites
 
