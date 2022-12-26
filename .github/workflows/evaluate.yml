@@ -41,11 +41,20 @@ jobs:
           path: assets/source-data
           key: source-dataset
 
+      - name: cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v3
+        with:
+          path: /home/runner/work/_temp/Library
+          key:  dependencies
+
       - name: Install packages
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
           R -e 'install.packages("optparse")'
           R -e 'install.packages("caTools")'
           R -e 'install.packages("dplyr")'
+          R -e 'install.packages("stringr")'
 
       - name: download source data
         if: steps.cache-source-data.outputs.cache-hit == 'true'
