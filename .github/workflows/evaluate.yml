@@ -45,6 +45,7 @@ jobs:
         run: |
           R -e 'install.packages("optparse")'
           R -e 'install.packages("caTools")'
+          R -e 'install.packages("dplyr")'
 
       - name: download source data
         if: steps.cache-source-data.outputs.cache-hit == 'true'
