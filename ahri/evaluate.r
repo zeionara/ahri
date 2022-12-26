@@ -18,9 +18,6 @@ library(MLmetrics)
 source("ahri/processing.r")
 source("ahri/path.r")
 
-cl <- makePSOCKcluster(8)
-registerDoParallel(cl)
-
 options <- list(
     make_option(
         c("-t", "--train"), type = "character", default = "assets/data/comments.train.csv"
@@ -35,15 +32,21 @@ options <- list(
         c("-m", "--method"), type = "character", default = "svmLinear"
     ),
     make_option(
-        c("-o", "--output"), type = "character", default = "assets/models/weights.rda"
+        c("-o", "--output"), type = "character", default = "assets/models/weights.rds"
     ),
     make_option(
         c("-f", "--min_token_frequency"), type = "integer", default = 50L
     ),
     make_option(
         c("--seed"), type = "integer", default = 17L
+    ),
+    make_option(
+        c("-n", "--n_workers"), type = "integer", default = 1L
     )
 ) %>% (\(option_list) OptionParser(option_list = option_list)) %>% parse_args
+
+makePSOCKcluster(options$n_workers) %>%
+    registerDoParallel
 
 stopwords <- get_stopwords() %>% rename(token = word)
 vectors <- read.csv(file = options$vectors) %>% rename(stem = token)
