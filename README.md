@@ -44,16 +44,16 @@ Currently there are multiple steps of the data processing pipeline:
 
 2. Generate word vectors
 
-```
+```sh
 ./ahri/embed.r -n 8
 ```
 
-3. Run model training and evaluation
-```
-./ahri/evaluate.r
+3. Run model training
+```sh
+./ahri/train.r
 ```
 
 4. Deploy model (coming soon)
-```
+```sh
 ./ahri/deploy.r
 ```
