@@ -48,6 +48,13 @@ jobs:
           path: /home/runner/work/_temp/Library
           key:  dependencies
 
+      - name: cache subsets
+        id: cache-subsets
+        uses: actions/cache@v3
+        with:
+          path: assets/subsets
+          key: subsets
+
       - name: Install packages
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
@@ -56,8 +63,8 @@ jobs:
           R -e 'install.packages("dplyr")'
           R -e 'install.packages("stringr")'
 
-      - name: download source data
-        if: steps.cache-source-data.outputs.cache-hit == 'true'
+      - name: split source data
+        if: steps.cache-source-data.outputs.cache-hit == 'true' && steps.cache-subsets.outputs.cache-hit != 'true'
         run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
 
   # pull:
