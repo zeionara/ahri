@@ -112,20 +112,12 @@ jobs:
         if: steps.cache-embeddings.outputs.cache-hit != 'true'
         uses: r-lib/actions/setup-r@v2
 
-      # - name: install dependencies
-      #   if: steps.cache-embeddings.outputs.cache-hit != 'true'
-      #   run: |
-      #     sudo apt-get install libcurl4-openssl-dev
-      #     R -e 'install.packages("stopwords")'
-      #     R -e 'install.packages("SnowballC")'
-      #     R -e 'install.packages("tidyverse")'
-      #     R -e 'install.packages("widyr")'
-      #     R -e 'install.packages("slider")'
-      #     R -e 'install.packages("furrr")'
-
       - name: generate embeddings
         if: steps.cache-embeddings.outputs.cache-hit != 'true'
-        run: ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv
+        run: |
+          sudo apt-get install tree
+          tree assets
+          ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv
 
   train-linear-svm:
     runs-on: ubuntu-latest
