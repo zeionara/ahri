@@ -83,10 +83,14 @@ nested_comments <- tidy_comments %>%
     # print
 
 # print("starting future map")
-if (options$n_workers == 8) {
-    plan(multisession(workers = 8L))
-} else if (!is.null(options$n_workers)) {
-    stop("unsupported number of workers")
+if (!is.null(options$n_workers)) {
+    if (options$n_workers == 8) {
+        plan(multisession(workers = 8L))
+    } else if (options$n_workers == 4) {
+        plan(multisession(workers = 8L))
+    } else {
+        stop("unsupported number of workers")
+    }
 }
 
 tidy_pmi <- nested_comments %>%
