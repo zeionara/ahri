@@ -4,6 +4,8 @@
 logo source: https://www.reddit.com/r/leagueoflegends/comments/660rsj/ahri_orb_logo/
 !-->
 
+[![evaluate](https://github.com/zeionara/ahri/actions/workflows/evaluate.yml/badge.svg)](https://github.com/zeionara/ahri/actions/workflows/evaluate.yml)
+
 <img src="assets/images/logo.png" width="400px" align="right"/>
 
 Exploratory project for applying github actions to implement ml pipelines.  
