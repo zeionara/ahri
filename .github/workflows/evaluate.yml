@@ -5,9 +5,6 @@ jobs:
   pull:
     runs-on: ubuntu-latest
     steps:
-      - env:
-          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
-
       - name: cache source data
         id: cache-source-data
         uses: actions/cache@v3
@@ -18,6 +15,8 @@ jobs:
       # Download dataset
       - name: download source data
         if: steps.cache-source-data.outputs.cache-hit != 'true'
+        env:
+          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
         run: |
           pip install kaggle
           mkdir $HOME/.kaggle
@@ -27,6 +26,7 @@ jobs:
           mkdir -p assets/source-data/
           sudo apt-get install unzip
           unzip youtube-statistics.zip -d assets/source-data/
+
   split:
     runs-on: ubuntu-latest
     needs: pull
@@ -47,7 +47,7 @@ jobs:
           R -e 'install.packages("caTools")'
 
       - name: download source data
-        if: steps.cache-source-data.outputs.cache-hit != 'true'
+        if: steps.cache-source-data.outputs.cache-hit == 'true'
         run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
 
   # pull:
