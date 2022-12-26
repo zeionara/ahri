@@ -76,88 +76,91 @@ jobs:
           R -e 'install.packages("furrr")'
 
       - name: split source data
-        if: steps.cache-subsets.outputs.cache-hit != 'true'
-        run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
-
-  embed:
-    runs-on: ubuntu-latest
-    needs: split
-    steps:
-      - name: cache subsets
-        id: cache-subsets
-        uses: actions/cache@v3
-        with:
-          path: assets/subsets
-          key: subsets
-
-      - name: cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/work/_temp/Library
-          key:  dependencies-2
-
-      - name: cache embeddings
-        id: cache-embeddings
-        uses: actions/cache@v3
-        with:
-          path: assets/pmi-word-vectors.csv
-          key: embeddings
-
-      - name: checkout repo
-        uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
-
-      - name: setup r environment
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
-        uses: r-lib/actions/setup-r@v2
-
-      - name: generate embeddings
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
+        # if: steps.cache-subsets.outputs.cache-hit != 'true'
         run: |
           sudo apt-get install tree
           tree assets
-          ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv
+          ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
 
-  train-linear-svm:
-    runs-on: ubuntu-latest
-    needs: embed
-    steps:
-      - name: cache embeddings
-        id: cache-embeddings
-        uses: actions/cache@v3
-        with:
-          path: assets/pmi-word-vectors.csv
-          key: embeddings
+  # embed:
+  #   runs-on: ubuntu-latest
+  #   needs: split
+  #   steps:
+  #     - name: cache subsets
+  #       id: cache-subsets
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/subsets
+  #         key: subsets
 
-      - name: cache subsets
-        id: cache-subsets
-        uses: actions/cache@v3
-        with:
-          path: assets/subsets
-          key: subsets
+  #     - name: cache dependencies
+  #       id: cache-dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /home/runner/work/_temp/Library
+  #         key:  dependencies-2
 
-      - name: cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/work/_temp/Library
-          key:  dependencies-2
+  #     - name: cache embeddings
+  #       id: cache-embeddings
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/pmi-word-vectors.csv
+  #         key: embeddings
 
-      - name: checkout repo
-        uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+  #     - name: checkout repo
+  #       uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
 
-      - name: setup r environment
-        uses: r-lib/actions/setup-r@v2
+  #     - name: setup r environment
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
+  #       uses: r-lib/actions/setup-r@v2
 
-      - name: train linear svm classifier
-        run: ./ahri/train.r -t assets/subsets/comments.train.csv -n 4
+  #     - name: generate embeddings
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
+  #       run: |
+  #         sudo apt-get install tree
+  #         tree assets
+  #         ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv
 
-      - name: trained linear svm model
-        uses: actions/upload-artifact@v3
-        with:
-          name: trained-linear-svm
-          path: assets/models/weights.svmLinear.rds
+  # train-linear-svm:
+  #   runs-on: ubuntu-latest
+  #   needs: embed
+  #   steps:
+  #     - name: cache embeddings
+  #       id: cache-embeddings
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/pmi-word-vectors.csv
+  #         key: embeddings
+
+  #     - name: cache subsets
+  #       id: cache-subsets
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/subsets
+  #         key: subsets
+
+  #     - name: cache dependencies
+  #       id: cache-dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /home/runner/work/_temp/Library
+  #         key:  dependencies-2
+
+  #     - name: checkout repo
+  #       uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+
+  #     - name: setup r environment
+  #       uses: r-lib/actions/setup-r@v2
+
+  #     - name: train linear svm classifier
+  #       run: ./ahri/train.r -t assets/subsets/comments.train.csv -n 4
+
+  #     - name: trained linear svm model
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: trained-linear-svm
+  #         path: assets/models/weights.svmLinear.rds
 
   # pull:
   #   runs-on: ubuntu-latest
