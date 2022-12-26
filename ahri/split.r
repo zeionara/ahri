@@ -33,7 +33,7 @@ if (options$train_fraction + options$valid_fraction > 1) {
 }
 
 # splitted_path <- str_split(path, "\\.")[[1]]
-# 
+#
 # splitted_path[1:length(splitted_path) - 1] %>%
 #     # paste0(".") %>%
 #     c("train", splitted_path[-1]) %>%
@@ -49,6 +49,10 @@ if (options$train_fraction + options$valid_fraction > 1) {
 set.seed(options$seed)
 
 data <- read.csv(file = options$input)
+
+options$output %>%
+    dirname %>%
+    dir.create(recursive = TRUE)
 
 # Make train subset
 

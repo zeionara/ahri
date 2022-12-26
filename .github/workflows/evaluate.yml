@@ -5,26 +5,74 @@ jobs:
   pull:
     runs-on: ubuntu-latest
     steps:
+      - env:
+          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+
+      - name: cache source data
+        id: cache-source-data
+        uses: actions/cache@v3
+        with:
+          path: assets/source-data
+          key: source-dataset
+
+      # Download dataset
+      - name: download source data
+        if: steps.cache-source-data.outputs.cache-hit != 'true'
+        run: |
+          pip install kaggle
+          mkdir $HOME/.kaggle
+          echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
+          kaggle datasets download -d advaypatil/youtube-statistics
+
+          mkdir -p assets/source-data/
+          sudo apt-get install unzip
+          unzip youtube-statistics.zip -d assets/source-data/
+  split:
+    runs-on: ubuntu-latest
+    needs: pull
+    steps:
       - uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
       - uses: r-lib/actions/setup-r@v2
 
-      # Download dataset
-      - run: sudo apt-get install unzip
-      - run: pip install kaggle
-      - run: mkdir $HOME/.kaggle
-      - env:
-          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
-        run: echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
-      - run: kaggle datasets download -d advaypatil/youtube-statistics
+      - name: cache source data
+        id: cache-source-data
+        uses: actions/cache@v3
+        with:
+          path: assets/source-data
+          key: source-dataset
 
-      # Unpack data
-      - run: mkdir -p assets/data/
-      - run: unzip youtube-statistics.zip -d assets/data/
-      # - run: cat assets/data/comments.csv | head
       - name: Install packages
         run: |
-          R -e 'install.packages("tokenizers")'
-          R -e 'install.packages("dplyr")'
-      
-      # Run ingestion (should be done in a separate job)
-      - run: Rscript ahri/ingest.r
+          R -e 'install.packages("optparse")'
+          R -e 'install.packages("caTools")'
+
+      - name: download source data
+        if: steps.cache-source-data.outputs.cache-hit != 'true'
+        run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
+
+  # pull:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+  #     - uses: r-lib/actions/setup-r@v2
+
+  #     # Download dataset
+  #     - run: sudo apt-get install unzip
+  #     - run: pip install kaggle
+  #     - run: mkdir $HOME/.kaggle
+  #     - env:
+  #         KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+  #       run: echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
+  #     - run: kaggle datasets download -d advaypatil/youtube-statistics
+
+  #     # Unpack data
+  #     - run: mkdir -p assets/data/
+  #     - run: unzip youtube-statistics.zip -d assets/data/
+  #     # - run: cat assets/data/comments.csv | head
+  #     - name: Install packages
+  #       run: |
+  #         R -e 'install.packages("tokenizers")'
+  #         R -e 'install.packages("dplyr")'
+  #     
+  #     # Run ingestion (should be done in a separate job)
+  #     - run: Rscript ahri/ingest.r
