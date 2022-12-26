@@ -27,13 +27,16 @@ options <- list(
         c("-s", "--embedding_size"), type = "integer", default = 10L
     ),
     make_option(
+        c("-n", "--n_workers"), type = "integer"
+    ),
+    make_option(
         c("-e", "--n_epochs"), type = "integer", default = 1000L
     ),
     make_option(
         c("-w", "--window_size"), type = "integer", default = 4L
     ),
     make_option(
-        c("-f", "--min_token_frequency"), type = "integer", default = 50L
+        c("-f", "--min_token_frequency"), type = "integer", default = 20L
     ),
     make_option(
         c("-v", "--verbose"), action = "store_true"
@@ -63,8 +66,10 @@ tidy_comments <- comments %>%
     mutate(comment = row_number()) %>%  # Column 'comment' contains comment id
     unnest_tokens(token, Comment) %>%
     anti_join(stopwords, by = "token") %>%
-    filter(!str_detect(token, "[0-9]+")) %>%  # Drop all numeric tokens
+    # filter(!str_detect(token, "[0-9]+")) %>%  # Drop all numeric tokens
     mutate(stem = wordStem(token)) %>%
+    filter(!str_detect(stem, "[0-9]+|\\s+")) %>%  # Drop all numeric tokens
+    filter(nchar(stem) > 0) %>%  # Drop all numeric tokens
     select(-token) %>%
     add_count(stem) %>%
     filter(n >= options$min_token_frequency) %>%
@@ -77,8 +82,15 @@ nested_comments <- tidy_comments %>%
     # head(3) %>%
     # print
 
+# print("starting future map")
+if (options$n_workers == 8) {
+    plan(multisession(workers = 8L))
+} else if (!is.null(options$n_workers)) {
+    stop("unsupported number of workers")
+}
+
 tidy_pmi <- nested_comments %>%
-    mutate(stems = future_map(stems, slide_windows, options$window_size, .progress = options$verbose)) %>%  # install.packages('furrr')
+    mutate(stems = future_map(stems, slide_windows, options$window_size, .progress = FALSE)) %>%  # install.packages('furrr')
     unnest(stems) %>%
     unite(window, comment, window) %>%
     pairwise_pmi(stem, window)

@@ -36,13 +36,24 @@ install.packages('MLmetrics')
 
 Currently there are multiple steps of the data processing pipeline:
 
-1. Generate word vectors
+1. Split source corpus
+
+```sh
+./ahri/split.r
+```
+
+2. Generate word vectors
 
 ```
-./ahri/main.r -s 10
+./ahri/embed.r -n 8
 ```
 
-2. Run model training and evaluation
+3. Run model training and evaluation
 ```
 ./ahri/evaluate.r
+```
+
+4. Deploy model (coming soon)
+```
+./ahri/deploy.r
 ```

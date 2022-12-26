@@ -39,6 +39,9 @@ options <- list(
     # ),
     make_option(
         c("-f", "--min_token_frequency"), type = "integer", default = 50L
+    ),
+    make_option(
+        c("--seed"), type = "integer", default = 17L
     )
     # make_option(
     #     c("-v", "--verbose"), action = "store_true"
@@ -71,7 +74,7 @@ comment_vectors <- tidy_comments %>%
     group_by(comment, sentiment) %>%
     summarise(across(starts_with("X"), mean), .groups = "drop")
 
-set.seed(17)
+set.seed(options$seed)
 
 split <- sample.split(comment_vectors$sentiment, SplitRatio = 0.75)
 
