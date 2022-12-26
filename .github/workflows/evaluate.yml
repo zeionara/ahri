@@ -36,7 +36,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v2
+          key:  dependencies-v3
           restore-keys: dependencies
 
       - name: cache subsets
@@ -79,6 +79,7 @@ jobs:
           R -e 'install.packages("caret")'
           R -e 'install.packages("doParallel")'
           R -e 'install.packages("MLmetrics")'
+          R -e 'install.packages("kernlab")'
 
       - name: split source data
         if: steps.cache-subsets.outputs.cache-hit != 'true'
@@ -93,7 +94,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v2
+          key:  dependencies-v3
 
       - name: cache embeddings
         id: cache-embeddings
@@ -130,7 +131,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v2
+          key:  dependencies-v3
 
       - name: checkout repo
         uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
