@@ -20,7 +20,10 @@ registerDoParallel(cl)
 
 options <- list(
     make_option(
-        c("-i", "--input"), type = "character", default = "assets/data/comments.csv"
+        c("-t", "--train"), type = "character", default = "assets/data/comments.train.csv"
+    ),
+    make_option(
+        c("-e", "--valid"), type = "character", default = "assets/data/comments.valid.csv"
     ),
     make_option(
         c("-v", "--vectors"), type = "character", default = "assets/data/pmi-word-vectors.csv"
@@ -48,43 +51,69 @@ options <- list(
     # )
 ) %>% (\(option_list) OptionParser(option_list = option_list)) %>% parse_args
 
-comments <- read.csv(file = options$input)
-vectors <- read.csv(file = options$vectors)
+preprocess <- function(comments, stopwords) {
+    comments %>%
+        select(Comment, Sentiment) %>%
+        rename(sentiment = Sentiment) %>%
+        mutate(comment = row_number()) %>%  # Column 'comment' contains comment id
+        unnest_tokens(token, Comment) %>%
+        anti_join(stopwords, by = "token") %>%
+        mutate(stem = wordStem(token)) %>%
+        filter(!str_detect(stem, "[0-9]+|\\s+")) %>%  # Drop all numeric tokens
+        filter(nchar(stem) > 0) %>%  # Drop all numeric tokens
+        # filter(str_detect(stem, ".+")) %>%  # Drop empty tokens
+        select(-token) %>%
+        add_count(stem) %>%
+        filter(n >= options$min_token_frequency) %>%
+        select(-n)
+}
 
-stopwords <- get_stopwords() %>%
-    rename(token = word)
+vectorize <- function(comments, vectors) {
+    comments %>%
+        merge(vectors, by = "stem", all.x = TRUE) %>%
+        group_by(comment, sentiment) %>%
+        summarise(across(starts_with("X"), mean), .groups = "drop")
+}
 
-tidy_comments <- comments %>%
-    select(Comment, Sentiment) %>%
-    rename(sentiment = Sentiment) %>%
-    mutate(comment = row_number()) %>%  # Column 'comment' contains comment id
-    unnest_tokens(token, Comment) %>%
-    anti_join(stopwords, by = "token") %>%
-    filter(!str_detect(token, "[0-9]+|\\s+")) %>%  # Drop all numeric tokens
-    filter(nchar(token) > 0) %>%  # Drop all numeric tokens
-    mutate(stem = wordStem(token)) %>%
-    filter(str_detect(stem, ".+")) %>%  # Drop empty tokens
-    select(-token) %>%
-    add_count(stem) %>%
-    filter(n >= options$min_token_frequency) %>%
-    select(-n)
+stopwords <- get_stopwords() %>% rename(token = word)
+vectors <- read.csv(file = options$vectors) %>% rename(stem = token)
 
-comment_vectors <- tidy_comments %>%
-    merge(vectors %>% rename(stem = token), by = "stem", all.x = TRUE) %>%
-    group_by(comment, sentiment) %>%
-    summarise(across(starts_with("X"), mean), .groups = "drop")
+train_subset <- read.csv(file = options$train) %>% preprocess(stopwords) %>% vectorize(vectors) %>% na.omit
+test_subset <- read.csv(file = options$valid) %>% preprocess(stopwords) %>% vectorize(vectors) %>% na.omit
+
+# tidy_comments <- comments %>%
+#     select(Comment, Sentiment) %>%
+#     rename(sentiment = Sentiment) %>%
+#     mutate(comment = row_number()) %>%  # Column 'comment' contains comment id
+#     unnest_tokens(token, Comment) %>%
+#     anti_join(stopwords, by = "token") %>%
+#     filter(!str_detect(token, "[0-9]+|\\s+")) %>%  # Drop all numeric tokens
+#     filter(nchar(token) > 0) %>%  # Drop all numeric tokens
+#     mutate(stem = wordStem(token)) %>%
+#     filter(str_detect(stem, ".+")) %>%  # Drop empty tokens
+#     select(-token) %>%
+#     add_count(stem) %>%
+#     filter(n >= options$min_token_frequency) %>%
+#     select(-n)
+
+# comment_vectors <- tidy_comments %>%
+#     merge(vectors %>% rename(stem = token), by = "stem", all.x = TRUE) %>%
+#     group_by(comment, sentiment) %>%
+#     summarise(across(starts_with("X"), mean), .groups = "drop")
+
+# train_vectors <- vectorize(tidy_comments, vectors)
 
 set.seed(options$seed)
 
-split <- sample.split(comment_vectors$sentiment, SplitRatio = 0.75)
+# split <- sample.split(comment_vectors$sentiment, SplitRatio = 0.75)
 
-train_subset <- subset(comment_vectors, split == TRUE)
-test_subset <- subset(comment_vectors, split == FALSE)
+# train_subset <- subset(comment_vectors, split == TRUE)
+# test_subset <- subset(comment_vectors, split == FALSE)
 
 # print(nrow(tidy_comments))
 # print(comment_vectors)
-print(train_subset)
-print(test_subset)
+# print(train_subset)
+# print(test_subset)
 
 # classifier <- svm(  # https://www.rdocumentation.org/packages/e1071/versions/1.7-12/topics/svm
 #     formula = sentiment ~ . - comment,
@@ -93,8 +122,8 @@ print(test_subset)
 #     kernel = "linear"
 # )
 
-# train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
-# classifier <- train(sentiment ~ . - comment, data = head(train_subset, 1000), method = "svmLinear", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE)
+train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+classifier <- train(sentiment ~ . - comment, data = head(train_subset, 1000), method = "svmLinear", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE)
 
 train_subset$sentiment <- as.factor(train_subset$sentiment)
 levels(train_subset$sentiment) <- c("negative", "neutral", "positive")
@@ -102,18 +131,28 @@ train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3, c
 metric <- "logLoss"
 formula <- paste("sentiment ~", paste(colnames(train_subset)[3:ncol(train_subset)], collapse = " + "))
 # print(formula)
-classifier <- train(as.formula(formula), data = head(train_subset, 5000), method = "mlp", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE, metric = metric,
-    tuneGrid = data.frame(size = c(1, 5, 7, 9)))
+classifier <- train(as.formula(formula), data = head(train_subset, 5000), method = "mlp", trControl = train_control, preProcess = c("center", "scale"), verbose = TRUE, metric = metric # ,
+    # tuneGrid = data.frame(size = c(1, 5, 7, 9))
+)
 
-print(classifier)
+# print(classifier)
+
+# dir.create("assets/models", recursive = TRUE)
+# saveRDS(classifier, "assets/models/mlp.rds")
+
+# classifier <- readRDS("assets/models/mlp.rds")
 
 # y_pred <- predict(classifier, newdata = (test_subset[, 3:ncol(test_subset)] %>% as.matrix))
 # test_data_as_matrix <- test_subset[, 3:ncol(test_subset)] %>% as.matrix
 # print(test_data_as_matrix)
 # y_pred <- predict(classifier, newdata = test_data_as_matrix)
+# print(test_subset[!complete.cases(test_subset), ])
+
 y_pred <- predict(classifier, newdata = test_subset)
 
-# print(y_pred)
+# print(length(y_pred))
+# print(nrow(test_subset))
+# print(length(test_subset$sentiment))
 
 ConfusionMatrix(y_pred = y_pred, test_subset$sentiment)
 
