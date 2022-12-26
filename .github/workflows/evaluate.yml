@@ -115,10 +115,7 @@ jobs:
 
       - name: generate embeddings
         if: steps.cache-embeddings.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get install tree
-          tree assets
-          ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv -n 4
+        run: ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv -n 4
 
   # train-linear-svm:
   #   runs-on: ubuntu-latest
