@@ -194,7 +194,7 @@ jobs:
           path: assets/models
 
       - name: deploy linear svm classifier
-        run: ./ahri/rest.r -v assets/pmi-word-vectors.csv -m assets/models/weights.svmLinear.rds
+        run: ./ahri/rest.r -v assets/pmi-word-vectors.csv -m assets/models/weights.svmLinear.rds > /tmp/ahri-log.txt 2>&1 &
 
   # pull:
   #   runs-on: ubuntu-latest
