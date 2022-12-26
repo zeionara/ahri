@@ -108,6 +108,7 @@ jobs:
       - name: install dependencies
         if: steps.cache-embeddings.outputs.cache-hit != 'true'
         run: |
+          sudo apt-get install libcurl4-openssl-dev
           R -e 'install.packages("stopwords")'
           R -e 'install.packages("SnowballC")'
           R -e 'install.packages("tidyverse")'
@@ -115,7 +116,7 @@ jobs:
           R -e 'install.packages("slider")'
           R -e 'install.packages("furrr")'
 
-      - name: split source data
+      - name: generate embeddings
         if: steps.cache-embeddings.outputs.cache-hit != 'true'
         run: ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv
 
