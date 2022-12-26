@@ -36,7 +36,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v3
+          key:  dependencies-v4
           restore-keys: dependencies
 
       - name: cache subsets
@@ -64,7 +64,7 @@ jobs:
       - name: install dependencies
         if: steps.cache-subsets.outputs.cache-hit != 'true' || steps.cache-dependencies.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get install libcurl4-openssl-dev
+          sudo apt-get install libcurl4-openssl-dev libsodium-dev
           R -e 'install.packages("optparse")'
           R -e 'install.packages("caTools")'
           R -e 'install.packages("dplyr")'
@@ -80,6 +80,7 @@ jobs:
           R -e 'install.packages("doParallel")'
           R -e 'install.packages("MLmetrics")'
           R -e 'install.packages("kernlab")'
+          R -e 'install.packages("plumber")'
 
       - name: split source data
         if: steps.cache-subsets.outputs.cache-hit != 'true'
@@ -94,7 +95,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v3
+          key:  dependencies-v4
 
       - name: cache embeddings
         id: cache-embeddings
@@ -131,7 +132,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/Library
-          key:  dependencies-v3
+          key:  dependencies-v4
 
       - name: checkout repo
         uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
