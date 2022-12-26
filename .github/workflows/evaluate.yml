@@ -2,34 +2,170 @@ name: evaluate
 run-name: evaluating model for ${{ github.actor }}
 on: [push]
 jobs:
-  pull:
-    runs-on: ubuntu-latest
-    steps:
-      - name: cache source data
-        id: cache-source-data
-        uses: actions/cache@v3
-        with:
-          path: assets/source-data
-          key: source-dataset
+  # pull:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: cache source data
+  #       id: cache-source-data
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/source-data
+  #         key: source-dataset
 
-      # Download dataset
-      - name: download source data
-        if: steps.cache-source-data.outputs.cache-hit != 'true'
-        env:
-          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
-        run: |
-          pip install kaggle
-          mkdir $HOME/.kaggle
-          echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
-          kaggle datasets download -d advaypatil/youtube-statistics
+  #     # Download dataset
+  #     - name: download source data
+  #       if: steps.cache-source-data.outputs.cache-hit != 'true'
+  #       env:
+  #         KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+  #       run: |
+  #         pip install kaggle
+  #         mkdir $HOME/.kaggle
+  #         echo $KAGGLE_TOKEN > $HOME/.kaggle/kaggle.json
+  #         kaggle datasets download -d advaypatil/youtube-statistics
 
-          mkdir -p assets/source-data/
-          sudo apt-get install unzip
-          unzip youtube-statistics.zip -d assets/source-data/
+  #         mkdir -p assets/source-data/
+  #         sudo apt-get install unzip
+  #         unzip youtube-statistics.zip -d assets/source-data/
 
-  split:
-    runs-on: ubuntu-latest
-    needs: pull
+  # split:
+  #   runs-on: ubuntu-latest
+  #   needs: pull
+  #   steps:
+  #     - name: cache dependencies
+  #       id: cache-dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /home/runner/work/_temp/Library
+  #         key:  dependencies-v4
+  #         restore-keys: dependencies
+
+  #     - name: cache subsets
+  #       id: cache-subsets
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/subsets
+  #         key: subsets
+
+  #     - name: checkout repo
+  #       uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+  #       if: steps.cache-subsets.outputs.cache-hit != 'true'
+
+  #     - name: cache source data
+  #       id: cache-source-data
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/source-data
+  #         key: source-dataset
+
+  #     - name: setup r environment
+  #       if: steps.cache-subsets.outputs.cache-hit != 'true' || steps.cache-dependencies.outputs.cache-hit != 'true'
+  #       uses: r-lib/actions/setup-r@v2
+
+  #     - name: install dependencies
+  #       if: steps.cache-subsets.outputs.cache-hit != 'true' || steps.cache-dependencies.outputs.cache-hit != 'true'
+  #       run: |
+  #         sudo apt-get install libcurl4-openssl-dev libsodium-dev
+  #         R -e 'install.packages("optparse")'
+  #         R -e 'install.packages("caTools")'
+  #         R -e 'install.packages("dplyr")'
+  #         R -e 'install.packages("stringr")'
+  #         R -e 'install.packages("stopwords")'
+  #         R -e 'install.packages("SnowballC")'
+  #         R -e 'install.packages("tidyverse")'
+  #         R -e 'install.packages("widyr")'
+  #         R -e 'install.packages("slider")'
+  #         R -e 'install.packages("furrr")'
+  #         R -e 'install.packages("irlba")'
+  #         R -e 'install.packages("caret")'
+  #         R -e 'install.packages("doParallel")'
+  #         R -e 'install.packages("MLmetrics")'
+  #         R -e 'install.packages("kernlab")'
+  #         R -e 'install.packages("plumber")'
+
+  #     - name: split source data
+  #       if: steps.cache-subsets.outputs.cache-hit != 'true'
+  #       run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
+
+  # embed:
+  #   runs-on: ubuntu-latest
+  #   needs: split
+  #   steps:
+  #     - name: cache dependencies
+  #       id: cache-dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /home/runner/work/_temp/Library
+  #         key:  dependencies-v4
+
+  #     - name: cache embeddings
+  #       id: cache-embeddings
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/pmi-word-vectors.csv
+  #         key: embeddings
+
+  #     - name: checkout repo
+  #       uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
+
+  #     - name: cache subsets
+  #       id: cache-subsets
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/subsets
+  #         key: subsets
+
+  #     - name: setup r environment
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
+  #       uses: r-lib/actions/setup-r@v2
+
+  #     - name: generate embeddings
+  #       if: steps.cache-embeddings.outputs.cache-hit != 'true'
+  #       run: ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv -n 4
+
+  # train-linear-svm:
+  #   runs-on: ubuntu-latest
+  #   needs: embed
+  #   steps:
+  #     - name: cache dependencies
+  #       id: cache-dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /home/runner/work/_temp/Library
+  #         key:  dependencies-v4
+
+  #     - name: checkout repo
+  #       uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
+
+  #     - name: cache embeddings
+  #       id: cache-embeddings
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/pmi-word-vectors.csv
+  #         key: embeddings
+
+  #     - name: cache subsets
+  #       id: cache-subsets
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: assets/subsets
+  #         key: subsets
+
+  #     - name: setup r environment
+  #       uses: r-lib/actions/setup-r@v2
+
+  #     - name: train linear svm classifier
+  #       run: ./ahri/train.r -t assets/subsets/comments.train.csv -v assets/pmi-word-vectors.csv -n 4
+
+  #     - name: trained linear svm model
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: trained-linear-svm
+  #         path: assets/models/weights.svmLinear.rds
+
+  deploy-linear-svm:
+    runs-on: self-hosted
+    # needs: train-linear-svm
     steps:
       - name: cache dependencies
         id: cache-dependencies
@@ -37,65 +173,9 @@ jobs:
         with:
           path: /home/runner/work/_temp/Library
           key:  dependencies-v4
-          restore-keys: dependencies
-
-      - name: cache subsets
-        id: cache-subsets
-        uses: actions/cache@v3
-        with:
-          path: assets/subsets
-          key: subsets
 
       - name: checkout repo
         uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
-        if: steps.cache-subsets.outputs.cache-hit != 'true'
-
-      - name: cache source data
-        id: cache-source-data
-        uses: actions/cache@v3
-        with:
-          path: assets/source-data
-          key: source-dataset
-
-      - name: setup r environment
-        if: steps.cache-subsets.outputs.cache-hit != 'true' || steps.cache-dependencies.outputs.cache-hit != 'true'
-        uses: r-lib/actions/setup-r@v2
-
-      - name: install dependencies
-        if: steps.cache-subsets.outputs.cache-hit != 'true' || steps.cache-dependencies.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get install libcurl4-openssl-dev libsodium-dev
-          R -e 'install.packages("optparse")'
-          R -e 'install.packages("caTools")'
-          R -e 'install.packages("dplyr")'
-          R -e 'install.packages("stringr")'
-          R -e 'install.packages("stopwords")'
-          R -e 'install.packages("SnowballC")'
-          R -e 'install.packages("tidyverse")'
-          R -e 'install.packages("widyr")'
-          R -e 'install.packages("slider")'
-          R -e 'install.packages("furrr")'
-          R -e 'install.packages("irlba")'
-          R -e 'install.packages("caret")'
-          R -e 'install.packages("doParallel")'
-          R -e 'install.packages("MLmetrics")'
-          R -e 'install.packages("kernlab")'
-          R -e 'install.packages("plumber")'
-
-      - name: split source data
-        if: steps.cache-subsets.outputs.cache-hit != 'true'
-        run: ./ahri/split.r -i assets/source-data/comments.csv -o assets/subsets/comments.csv
-
-  embed:
-    runs-on: ubuntu-latest
-    needs: split
-    steps:
-      - name: cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/work/_temp/Library
-          key:  dependencies-v4
 
       - name: cache embeddings
         id: cache-embeddings
@@ -104,64 +184,17 @@ jobs:
           path: assets/pmi-word-vectors.csv
           key: embeddings
 
-      - name: checkout repo
-        uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
-
-      - name: cache subsets
-        id: cache-subsets
-        uses: actions/cache@v3
-        with:
-          path: assets/subsets
-          key: subsets
-
-      - name: setup r environment
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
-        uses: r-lib/actions/setup-r@v2
-
-      - name: generate embeddings
-        if: steps.cache-embeddings.outputs.cache-hit != 'true'
-        run: ./ahri/embed.r -i assets/subsets/comments.train.csv -o assets/pmi-word-vectors.csv -n 4
-
-  train-linear-svm:
-    runs-on: ubuntu-latest
-    needs: embed
-    steps:
-      - name: cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/work/_temp/Library
-          key:  dependencies-v4
-
-      - name: checkout repo
-        uses: actions/checkout@master  # cwd: /home/runner/work/ahri/ahri
-
-      - name: cache embeddings
-        id: cache-embeddings
-        uses: actions/cache@v3
-        with:
-          path: assets/pmi-word-vectors.csv
-          key: embeddings
-
-      - name: cache subsets
-        id: cache-subsets
-        uses: actions/cache@v3
-        with:
-          path: assets/subsets
-          key: subsets
-
       - name: setup r environment
         uses: r-lib/actions/setup-r@v2
 
-      - name: train linear svm classifier
-        run: ./ahri/train.r -t assets/subsets/comments.train.csv -v assets/pmi-word-vectors.csv -n 4
+      # - name: pull trained model
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: trained-linear-svm
+      #     path: assets/models/weights.svmLinear.rds
 
-      - name: trained linear svm model
-        uses: actions/upload-artifact@v3
-        with:
-          name: trained-linear-svm
-          path: assets/models/weights.svmLinear.rds
+      - name: deploy linear svm classifier
+        run: ./ahri/rest.r -v assets/pmi-word-vectors.csv -m assets/models/weights.svmLinear.rds
 
   # pull:
   #   runs-on: ubuntu-latest

@@ -3,7 +3,7 @@ library(tidytext)
 library(SnowballC)
 library(tidyverse)
 
-preprocess <- function(comments, stopwords) {
+preprocess <- function(comments, stopwords, min_token_frequency = 1) {
     comments %>%
         select(Comment, Sentiment) %>%
         rename(sentiment = Sentiment) %>%
@@ -15,13 +15,16 @@ preprocess <- function(comments, stopwords) {
         filter(nchar(stem) > 0) %>%  # Drop all numeric tokens
         select(-token) %>%
         add_count(stem) %>%
-        filter(n >= options$min_token_frequency) %>%
+        filter(n >= min_token_frequency) %>%
         select(-n)
 }
 
 vectorize <- function(comments, vectors) {
-    comments %>%
-        merge(vectors, by = "stem", all.x = TRUE) %>%
+    merged <- comments %>%
+        merge(vectors, by = "stem", all.x = TRUE)
+
+    merged %>%
+        subset(!is.na(merged[[4]])) %>%
         group_by(comment, sentiment) %>%
         summarise(across(starts_with("X"), mean), .groups = "drop")
 }

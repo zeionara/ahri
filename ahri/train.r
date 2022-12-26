@@ -51,7 +51,7 @@ makePSOCKcluster(options$n_workers) %>%
 stopwords <- get_stopwords() %>% rename(token = word)
 vectors <- read.csv(file = options$vectors) %>% rename(stem = token)
 
-train_subset <- read.csv(file = options$train) %>% preprocess(stopwords) %>% vectorize(vectors) %>% na.omit
+train_subset <- read.csv(file = options$train) %>% preprocess(stopwords, options$min_token_frequency) %>% vectorize(vectors) %>% na.omit
 train_subset$sentiment <- as.factor(train_subset$sentiment)
 levels(train_subset$sentiment) <- c("negative", "neutral", "positive")
 
